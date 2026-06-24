@@ -29,6 +29,7 @@ public class Calc {
                 case "/": return 2;
                 case "%": return 2;
                 case "^": return 3;
+                case "sin": return 4;
                 default: return -1;
             }
         }
@@ -87,27 +88,62 @@ public class Calc {
                 }
                 else
                 {
-                    double num2=stiva.pop();
-                    double num1=stiva.pop();
-
-                    switch(token)
+                    if(token.equals("sin"))
                     {
-                        case "+": stiva.push(num1+num2); break;
-                        case "-": stiva.push(num1-num2); break;
-                        case "*": stiva.push(num1*num2); break;
-                        case "/":
-                            if(num2==0) throw new ArithmeticException("Division by zero");
-                            stiva.push(num1/num2); break;
-                        case "%":
-                            if(num2==0) throw new ArithmeticException("Division by zero");
-                            stiva.push(num1%num2); break;
-                        case "^":
-                            stiva.push(Math.pow(num1,num2)); break;
+                        double unghi=stiva.pop();
+                        stiva.push(calcSin(unghi));
+                    }
+                    else
+                    {
+                        double num2=stiva.pop();
+                        double num1=stiva.pop();
+
+                        switch(token)
+                        {
+                            case "+": stiva.push(num1+num2); break;
+                            case "-": stiva.push(num1-num2); break;
+                            case "*": stiva.push(num1*num2); break;
+                            case "/":
+                                if(num2==0) throw new ArithmeticException("Division by zero");
+                                stiva.push(num1/num2); break;
+                            case "%":
+                                if(num2==0) throw new ArithmeticException("Division by zero");
+                                stiva.push(num1%num2); break;
+                            case "^":
+                                stiva.push(Math.pow(num1,num2)); break;
+                        }
                     }
                 }
 
             }
 
             return stiva.pop();
+        }
+
+        public static double calcSin(double x)
+        {
+            x = x * Math.PI / 180;
+            x = x % (2*Math.PI);
+            if(x>Math.PI)
+                x-=2*Math.PI;
+            else if(x<-Math.PI)
+                x+=2*Math.PI;
+
+            double termen=x;
+            double suma=x;
+            int n=1;
+
+            while(Math.abs(termen) > 1e-9)
+            {
+                termen=termen* (-1 * x * x) / ( (2.0*n)*(2.0*n+1.0));
+
+                //        -x^2
+                //     ------------
+                //      2n * (2n+1)
+
+                suma+=termen;
+                n++;
+            }
+            return suma;
         }
 }
