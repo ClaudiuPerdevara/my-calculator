@@ -2,6 +2,7 @@ package Calculator;
 
 import java.util.ArrayList;
 import java.util.*;
+import java.lang.Math;
 
 public class Calc {
     public static void main(String[] args) {
@@ -30,6 +31,7 @@ public class Calc {
                 case "%": return 2;
                 case "^": return 3;
                 case "sin": return 4;
+                case "cos": return 4;
                 default: return -1;
             }
         }
@@ -60,9 +62,17 @@ public class Calc {
                     stivaOp.pop();
                 }
                 else {
-                    while(!stivaOp.isEmpty() && precedenta(token)<=precedenta(stivaOp.peek()))
+                    while(!stivaOp.isEmpty() && !stivaOp.peek().equals("("))
                     {
-                        rezultat.add(stivaOp.pop());
+                        int precToken=precedenta(token);
+                        int precTop=precedenta(stivaOp.peek());
+
+                        boolean asociativStanga = !token.equals("^") && !token.equals("sin") && !token.equals("cos");
+
+                        if( (asociativStanga && precToken<=precTop) || (!asociativStanga && precToken < precTop) )
+                            rezultat.add(stivaOp.pop());
+                        else
+                            break;
                     }
                     stivaOp.push(token);
                 }
@@ -93,6 +103,11 @@ public class Calc {
                         double unghi=stiva.pop();
                         stiva.push(calcSin(unghi));
                     }
+                    else if(token.equals("cos"))
+                    {
+                        double unghi=stiva.pop();
+                        stiva.push(Math.cos(Math.toRadians(unghi)));
+                    }
                     else
                     {
                         double num2=stiva.pop();
@@ -122,7 +137,7 @@ public class Calc {
 
         public static double calcSin(double x)
         {
-            x = x * Math.PI / 180;
+            x=Math.toRadians(x);
             x = x % (2*Math.PI);
             if(x>Math.PI)
                 x-=2*Math.PI;
