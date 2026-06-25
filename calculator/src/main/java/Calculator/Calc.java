@@ -1,7 +1,9 @@
 package Calculator;
 
+import java.util.List;
 import java.util.ArrayList;
-import java.util.*;
+import java.util.Scanner;
+import java.util.Stack;
 import java.lang.Math;
 
 public class Calc {
@@ -9,19 +11,19 @@ public class Calc {
         //creez un obiect Scanner sa citesc date de la tastatura
         Scanner scanner = new Scanner(System.in);
 
-        String expresie = scanner.nextLine();
+        String expression = scanner.nextLine();
         try {
-            List<String> postfix = infixToPostfix(expresie);
-            double rezultat = evalPostfix(postfix);
-            System.out.println("Rezultatul este: " + rezultat);
-        } catch (Exception e) {
-            System.out.println("Eroare la procesarea expresiei: " + e.getMessage());
+            List<String> postfix = infixToPostfix(expression);
+            double result = evaluatePostfix(postfix);
+            System.out.println("The result is: " + result);
         }
-
+        catch(Exception e) {
+            System.out.println("Error processing the expression: " + e.getMessage());
+        }
         scanner.close();
     }
 
-        private static int precedenta(String op)
+        private static int precedence(String op)
         {
             switch(op){
                 case "+": return 1;
@@ -36,12 +38,12 @@ public class Calc {
             }
         }
 
-        public static List<String> infixToPostfix(String expresie)
+        public static List<String> infixToPostfix(String expression)
         {
-            List<String> rezultat = new ArrayList<>();
-            Stack<String> stivaOp=new Stack<>();
+            List<String> result = new ArrayList<>();
+            Stack<String> operatorStack = new Stack<>();
 
-            String[] tokens=expresie.split(" ");
+            String[] tokens = expression.split(" ");
 
             for(String token:tokens)
             {
@@ -50,115 +52,116 @@ public class Calc {
                 //daca e numar il adaug direct
                 if(token.matches("-?\\d+(\\.\\d+)?"))
                 {
-                    rezultat.add(token);
+                    result.add(token);
                 }
                 else if(token.equals("(")) { //daca e paranteza (
-                    stivaOp.push(token);
+                    operatorStack.push(token);
                 }
                 else if(token.equals(")")) { //daca e paranteza )
-                    while (!stivaOp.isEmpty() && !stivaOp.peek().equals("(")) {
-                        rezultat.add(stivaOp.pop());
+                    while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
+                        result.add(operatorStack.pop());
                     }
-                    stivaOp.pop();
+                    operatorStack.pop();
                 }
-                else {
-                    while(!stivaOp.isEmpty() && !stivaOp.peek().equals("("))
+                else
+                {
+                    while(!operatorStack.isEmpty() && !operatorStack.peek().equals("("))
                     {
-                        int precToken=precedenta(token);
-                        int precTop=precedenta(stivaOp.peek());
+                        int precToken = precedence(token);
+                        int precTop = precedence(operatorStack.peek());
 
-                        boolean asociativStanga = !token.equals("^") && !token.equals("sin") && !token.equals("cos");
+                        boolean leftAssociativity = !token.equals("^") && !token.equals("sin") && !token.equals("cos");
 
-                        if( (asociativStanga && precToken<=precTop) || (!asociativStanga && precToken < precTop) )
-                            rezultat.add(stivaOp.pop());
+                        if((leftAssociativity && precToken<=precTop) || (!leftAssociativity && precToken < precTop))
+                            result.add(operatorStack.pop());
                         else
                             break;
                     }
-                    stivaOp.push(token);
+                    operatorStack.push(token);
                 }
             }
 
-            while(!stivaOp.isEmpty())
+            while(!operatorStack.isEmpty())
             {
-                rezultat.add(stivaOp.pop());
+                result.add(operatorStack.pop());
             }
 
-            return rezultat;
+            return result;
         }
 
-        public static double evalPostfix(List<String> postfix)
+        public static double evaluatePostfix(List<String> postfix)
         {
-            Stack<Double> stiva=new Stack<>();
+            Stack<Double> stack = new Stack<>();
 
             for(String token:postfix)
             {
                 if(token.matches("-?\\d+(\\.\\d+)?"))
                 {
-                    stiva.push(Double.parseDouble(token));
+                    stack.push(Double.parseDouble(token));
                 }
                 else
                 {
                     if(token.equals("sin"))
                     {
-                        double unghi=stiva.pop();
-                        stiva.push(calcSin(unghi));
+                        double angle = stack.pop();
+                        stack.push(calculateSin(angle));
                     }
                     else if(token.equals("cos"))
                     {
-                        double unghi=stiva.pop();
-                        stiva.push(Math.cos(Math.toRadians(unghi)));
+                        double angle = stack.pop();
+                        stack.push(Math.cos(Math.toRadians(angle)));
                     }
                     else
                     {
-                        double num2=stiva.pop();
-                        double num1=stiva.pop();
+                        double num2 = stack.pop();
+                        double num1 = stack.pop();
 
                         switch(token)
                         {
-                            case "+": stiva.push(num1+num2); break;
-                            case "-": stiva.push(num1-num2); break;
-                            case "*": stiva.push(num1*num2); break;
+                            case "+": stack.push(num1 + num2); break;
+                            case "-": stack.push(num1 - num2); break;
+                            case "*": stack.push(num1 * num2); break;
                             case "/":
-                                if(num2==0) throw new ArithmeticException("Division by zero");
-                                stiva.push(num1/num2); break;
+                                if(num2 == 0) throw new ArithmeticException("Division by zero");
+                                stack.push(num1 / num2); break;
                             case "%":
-                                if(num2==0) throw new ArithmeticException("Division by zero");
-                                stiva.push(num1%num2); break;
+                                if(num2 == 0) throw new ArithmeticException("Division by zero");
+                                stack.push(num1 % num2); break;
                             case "^":
-                                stiva.push(Math.pow(num1,num2)); break;
+                                stack.push(Math.pow(num1,num2)); break;
                         }
                     }
                 }
 
             }
 
-            return stiva.pop();
+            return stack.pop();
         }
 
-        public static double calcSin(double x)
+        public static double calculateSin(double x)
         {
-            x=Math.toRadians(x);
-            x = x % (2*Math.PI);
-            if(x>Math.PI)
-                x-=2*Math.PI;
-            else if(x<-Math.PI)
-                x+=2*Math.PI;
+            x = Math.toRadians(x);
+            x = x % (2 * Math.PI);
+            if(x > Math.PI)
+                x -= 2 * Math.PI;
+            else if(x < -Math.PI)
+                x += 2 * Math.PI;
 
-            double termen=x;
-            double suma=x;
-            int n=1;
+            double element = x;
+            double sum = x;
+            int n = 1;
 
-            while(Math.abs(termen) > 1e-9)
+            while(Math.abs(element) > 1e-9)
             {
-                termen=termen* (-1 * x * x) / ( (2.0*n)*(2.0*n+1.0));
+                element = element * (-1 * x * x) / ((2.0 * n) * (2.0 * n + 1.0));
 
                 //        -x^2
                 //     ------------
                 //      2n * (2n+1)
 
-                suma+=termen;
+                sum += element;
                 n++;
             }
-            return suma;
+            return sum;
         }
 }
