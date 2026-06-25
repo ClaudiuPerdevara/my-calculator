@@ -109,7 +109,9 @@ public class Calc {
                     else if(token.equals("cos"))
                     {
                         double angle = stack.pop();
-                        stack.push(Math.cos(Math.toRadians(angle)));
+                        double cosValue = Math.cos(Math.toRadians(angle));
+                        double cosExponentialValue = Math.cos(Math.pow(Math.toRadians(angle), 3));
+                        stack.push(cosExponentialValue - 7 * cosValue);
                     }
                     else
                     {
