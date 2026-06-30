@@ -24,7 +24,6 @@ clean:
 
 install: release
 	install -m 0644 target/*.jar $(BIN_DIR)/$(APP_NAME)
-	install -m 0644 target/*.jar $(LIB_DIR)/$(APP_NAME)
 
 	if [ -d "libs" ]; then \
 		echo "Installing the additional libraries." \
